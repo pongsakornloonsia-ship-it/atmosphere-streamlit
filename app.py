@@ -1,10 +1,10 @@
 import streamlit as st
-import pandas as pd
+import math
 import random
 
 # ================= CONFIG =================
 st.set_page_config(
-    page_title="เครื่องมือพยากรณ์อากาศ",
+    page_title="Atmosphere Simulator",
     page_icon="🌤️",
     layout="wide"
 )
@@ -12,293 +12,225 @@ st.set_page_config(
 # ================= CSS =================
 st.markdown("""
 <style>
-body {
-    background: linear-gradient(135deg,#d9f7ef,#ecfeff);
+
+.stApp {
+    background: linear-gradient(135deg,#89f7fe,#fbc2eb);
 }
 
-.block-container { padding-top:2rem; }
-
-.card {
-    background:white;
-    padding:34px;
-    border-radius:36px;
-    box-shadow:0 18px 40px rgba(0,0,0,0.14);
-    margin-bottom:38px;
+.block-container {
+    padding-top: 2rem;
 }
 
-.title-box {
+/* ===== HEADER ===== */
+.hero {
     text-align:center;
-    padding:65px;
-    background:linear-gradient(135deg,#99f6e4,#93c5fd);
-    border-radius:42px;
-    margin-bottom:55px;
+    padding:60px;
+    border-radius:35px;
+    background: linear-gradient(120deg,#66a6ff,#89f7fe);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    margin-bottom:50px;
 }
 
-.badge {
+.hero h1 {font-size:52px;}
+
+.tag {
     display:inline-block;
-    padding:12px 22px;
-    background:#dcfce7;
+    padding:10px 22px;
+    background:white;
     border-radius:30px;
     font-weight:700;
     margin:6px;
 }
 
-.big-number {
-    font-size:52px;
+/* ===== CARD ===== */
+.card {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(14px);
+    padding:30px;
+    border-radius:28px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.18);
+    margin-bottom:35px;
+    transition:0.3s;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+.big {
+    font-size:46px;
     font-weight:900;
-    color:#0f766e;
+    color:#2563eb;
 }
 
-.formula-box {
-    background:#f0fdfa;
-    padding:18px;
-    border-radius:22px;
-    border-left:7px solid #14b8a6;
-    margin-top:14px;
+.formula {
+    background:#020617;
+    color:#a7f3d0;
+    padding:16px;
+    border-radius:14px;
+    font-family: monospace;
+    margin-top:10px;
 }
 
-/* -------- CLOUD VISUAL -------- */
-
-.cloud-area {
-    display:flex;
-    justify-content:center;
-    gap:25px;
-    margin-top:25px;
+.wind {
+    font-size:80px;
+    text-align:center;
 }
 
 .cloud {
-    width:150px;
-    height:85px;
-    background:#e5e7eb;
-    border-radius:55px;
-    position:relative;
-    box-shadow:0 12px 22px rgba(0,0,0,0.18);
-}
-
-.cloud::before,
-.cloud::after {
-    content:"";
-    position:absolute;
-    background:#e5e7eb;
-    width:75px;
-    height:75px;
-    border-radius:50%;
-    top:-38px;
-}
-
-.cloud::before { left:20px; }
-.cloud::after { right:28px; }
-
-.cloud.dark,
-.cloud.dark::before,
-.cloud.dark::after {
-    background:#9ca3af;
-}
-
-.cloud.tall { height:105px; }
-
-/* rain animation */
-.rain {
-    font-size:30px;
-    animation: fall 1.4s infinite;
-}
-
-@keyframes fall {
-    0% {opacity:0; transform:translateY(0);}
-    100% {opacity:1; transform:translateY(26px);}
-}
-
-/* forecast */
-.forecast-box {
-    background:linear-gradient(135deg,#ecfeff,#f0fdf4);
-    padding:20px;
-    border-radius:22px;
+    font-size:120px;
     text-align:center;
-    box-shadow:0 8px 20px rgba(0,0,0,0.1);
 }
 
-.day-title {
-    font-weight:900;
-    font-size:18px;
+/* ===== WEEK ===== */
+.week {
+    display:grid;
+    grid-template-columns: repeat(7,1fr);
+    gap:18px;
 }
+
+.day {
+    background:linear-gradient(135deg,#fff1eb,#ace0f9);
+    border-radius:22px;
+    padding:18px;
+    text-align:center;
+    font-weight:700;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 # ================= HEADER =================
 st.markdown("""
-<div class="title-box">
-<h1>🌍 เครื่องมือพยากรณ์อากาศ</h1>
-<h4>แดชบอร์ดคำนวณสภาพอากาศเชิงการศึกษา</h4>
-<span class="badge">🌡️ อุณหภูมิ</span>
-<span class="badge">📉 ความดัน</span>
-<span class="badge">💧 ความชื้น</span>
-<span class="badge">🌬️ ลม</span>
-<span class="badge">☁️ เมฆ</span>
-<span class="badge">📅 7 วัน</span>
+<div class="hero">
+    <h1>🌍 ระบบพยากรณ์อากาศ</h1>
+    <h3>Atmosphere Simulator</h3>
+    <div>
+        <span class="tag">7-Day Forecast</span>
+        <span class="tag">Interactive</span>
+        <span class="tag">Science Based</span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ==================================================
-# 🌡️ TEMPERATURE
-# ==================================================
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# ================= INPUT SIDEBAR =================
+st.sidebar.header("⚙️ ควบคุมค่า")
+
+temp = st.sidebar.slider("🌡 อุณหภูมิ (°C)", -10, 45, 30)
+pressure_force = st.sidebar.number_input("แรง (N)", value=101300.0)
+area = st.sidebar.number_input("พื้นที่ (m²)", value=1.0)
+
+m_real = st.sidebar.number_input("มวลไอน้ำจริง (g)", value=12.0)
+m_sat = st.sidebar.number_input("มวลไอน้ำอิ่มตัว (g)", value=18.0)
+
+wind_speed = st.sidebar.slider("💨 ความเร็วลม (km/h)", 0, 120, 20)
+wind_dir = st.sidebar.slider("🧭 ทิศลม (°)", 0, 360, 90)
+
+cloud_cover = st.sidebar.slider("☁️ Cloud %", 0, 100, 40)
+
+# ================= CALCULATIONS =================
+P = pressure_force / area if area else 0
+rh = (m_real / m_sat) * 100 if m_sat else 0
+ah = m_real
+chance_rain = min(100, int((rh + cloud_cover) / 2))
+
+t_max = temp + random.randint(3,6)
+t_min = temp - random.randint(4,8)
+
+# ================= TEMP =================
+st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.subheader("🌡️ อุณหภูมิวันนี้")
-
-temp = st.slider("อุณหภูมิปัจจุบัน (°C)", -10.0, 50.0, 30.0)
-t_min = st.slider("ต่ำสุดวันนี้ (°C)", -10.0, 40.0, 24.0)
-t_max = st.slider("สูงสุดวันนี้ (°C)", 0.0, 50.0, 35.0)
-
-st.markdown(f"<div class='big-number'>{temp:.1f}°C</div>", unsafe_allow_html=True)
-st.caption(f"ต่ำสุด {t_min:.1f}°C | สูงสุด {t_max:.1f}°C")
-
-st.markdown("""
-<div class="formula-box">
-<b>ข้อมูล:</b> รับค่าจากผู้ใช้โดยตรง
-</div>
-""", unsafe_allow_html=True)
+st.markdown(f"<div class='big'>{temp} °C</div>", unsafe_allow_html=True)
+st.write(f"สูงสุด: **{t_max}°C** | ต่ำสุด: **{t_min}°C**")
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ==================================================
-# 📉 PRESSURE
-# ==================================================
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# ================= PRESSURE =================
+st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.subheader("📉 ความดันอากาศ")
-
-F = st.slider("แรง (N)", 0.0, 200000.0, 101300.0)
-A = st.slider("พื้นที่ (m²)", 0.1, 20.0, 1.0)
-
-P = F / A if A else 0
-
-st.markdown(f"<div class='big-number'>{P:,.0f} Pa</div>", unsafe_allow_html=True)
-
+st.markdown(f"<div class='big'>{P:,.0f} Pa</div>", unsafe_allow_html=True)
 st.markdown("""
-<div class="formula-box">
-<b>สูตร:</b> P = F ÷ A
+<div class="formula">
+P = F / A
 </div>
 """, unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ==================================================
-# 💧 HUMIDITY
-# ==================================================
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# ================= HUMIDITY =================
+st.markdown("<div class='card'>", unsafe_allow_html=True)
 st.subheader("💧 ความชื้น")
 
-m_real = st.slider("มวลไอน้ำจริง (g)", 0.0, 40.0, 15.0)
-m_sat = st.slider("มวลไอน้ำอิ่มตัว (g)", 1.0, 50.0, 22.0)
-volume = st.slider("ปริมาตรอากาศ (m³)", 0.5, 5.0, 1.0)
-
-rh = (m_real / m_sat) * 100
-ah = m_real / volume
-
-st.markdown(f"<div class='big-number'>{rh:.1f}%</div>", unsafe_allow_html=True)
-st.write(f"ความชื้นสมบูรณ์ = {ah:.2f} g/m³")
-
+st.markdown(f"<div class='big'>{rh:.1f}%</div>", unsafe_allow_html=True)
 st.markdown("""
-<div class="formula-box">
-<b>สูตร:</b><br>
-RH = (มวลไอน้ำจริง ÷ มวลไอน้ำอิ่มตัว) × 100<br>
-AH = มวลไอน้ำ ÷ ปริมาตรอากาศ
+<div class="formula">
+RH = (mจริง / mอิ่มตัว) × 100
 </div>
 """, unsafe_allow_html=True)
+
+st.write(f"Absolute humidity ≈ {ah:.2f} g/m³")
+
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ==================================================
-# 🌬️ WIND
-# ==================================================
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("🌬️ ลม")
+# ================= WIND =================
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("💨 ลม")
 
-wind_speed = st.slider("ความเร็วลม (km/h)", 0, 120, 15)
-wind_dir = st.selectbox(
-    "ทิศลม",
-    ["เหนือ","ตะวันออก","ใต้","ตะวันตก",
-     "ตะวันออกเฉียงเหนือ","ตะวันออกเฉียงใต้",
-     "ตะวันตกเฉียงใต้","ตะวันตกเฉียงเหนือ"]
-)
+arrow="➡️"
+if wind_dir>45 and wind_dir<=135: arrow="⬇️"
+elif wind_dir>135 and wind_dir<=225: arrow="⬅️"
+elif wind_dir>225 and wind_dir<=315: arrow="⬆️"
 
-st.markdown(f"<div class='big-number'>{wind_speed} km/h</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='wind'>{arrow}</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='big'>{wind_speed} km/h</div>", unsafe_allow_html=True)
 
 st.markdown("""
-<div class="formula-box">
-<b>ข้อมูล:</b> รับค่าจากผู้ใช้
+<div class="formula">
+Speed = distance / time<br>
+Direction = 0–360°
 </div>
 """, unsafe_allow_html=True)
+
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ==================================================
-# ☁️ CLOUD + RAIN
-# ==================================================
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("☁️ เมฆและโอกาสฝน")
+# ================= CLOUD =================
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("☁️ เมฆบนท้องฟ้า")
 
-cloud_type = st.selectbox(
-    "ชนิดเมฆ",
-    ["Cirrus","Cumulus","Stratus","Nimbus","Cumulonimbus"]
-)
+emoji="☀️"
+if cloud_cover>20: emoji="🌤"
+if cloud_cover>40: emoji="⛅"
+if cloud_cover>60: emoji="🌥"
+if cloud_cover>80: emoji="☁️"
 
-cloud_amount = st.slider("ปริมาณเมฆ (%)", 0, 100, 60)
+st.markdown(f"<div class='cloud'>{emoji}</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='big'>{cloud_cover}%</div>", unsafe_allow_html=True)
 
-cloud_class = "cloud"
-if cloud_type in ["Nimbus","Cumulonimbus"]:
-    cloud_class += " dark"
-if cloud_type == "Cumulonimbus":
-    cloud_class += " tall"
+st.markdown("</div>", unsafe_allow_html=True)
 
-drops = "💧💧💧" if cloud_amount > 60 else ""
+# ================= RAIN =================
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("🌧️ โอกาสเกิดฝน")
+st.markdown(f"<div class='big'>{chance_rain}%</div>", unsafe_allow_html=True)
+st.progress(chance_rain/100)
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown(
-    f"""
-    <div class="cloud-area">
-        <div class="{cloud_class}"></div>
-        <div class="rain">{drops}</div>
+# ================= 7 DAYS =================
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("📅 พยากรณ์ 7 วัน")
+
+days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+
+st.markdown("<div class='week'>", unsafe_allow_html=True)
+
+for d in days:
+    hi=temp+random.randint(2,6)
+    lo=temp-random.randint(3,7)
+
+    st.markdown(f"""
+    <div class='day'>
+        {d}<br>
+        🌤<br>
+        {lo}° / {hi}°
     </div>
-    """,
-    unsafe_allow_html=True
-)
+    """, unsafe_allow_html=True)
 
-rain_chance = cloud_amount*0.4 + rh*0.4
-if cloud_type in ["Nimbus","Cumulonimbus"]:
-    rain_chance += 20
-
-rain_chance = min(rain_chance,100)
-
-st.markdown(f"<div class='big-number'>{rain_chance:.0f}%</div>", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="formula-box">
-<b>สูตรโอกาสฝน:</b><br>
-(ปริมาณเมฆ × 0.4) + (RH × 0.4)<br>
-+20 ถ้าเป็น Nimbus หรือ Cumulonimbus
-</div>
-""", unsafe_allow_html=True)
-st.markdown("</div>", unsafe_allow_html=True)
-
-# ==================================================
-# 📅 7 DAY FORECAST
-# ==================================================
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("📅 พยากรณ์ล่วงหน้า 7 วัน")
-
-cols = st.columns(7)
-
-for i in range(7):
-    with cols[i]:
-        tmin = round(random.uniform(23,27),1)
-        tmax = round(random.uniform(32,38),1)
-        rain = round(random.uniform(20,90))
-        icon = "🌧️" if rain > 60 else "🌤️"
-
-        st.markdown(
-            f"""
-            <div class="forecast-box">
-            <div class="day-title">Day {i+1}</div>
-            <h2>{icon}</h2>
-            <b>{tmin}° / {tmax}°</b><br>
-            🌧️ {rain}%
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div></div>", unsafe_allow_html=True)
