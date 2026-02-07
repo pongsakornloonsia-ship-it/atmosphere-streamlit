@@ -1,4 +1,5 @@
 import streamlit as st
+import math
 
 # ---------------- CONFIG ----------------
 st.set_page_config(
@@ -10,7 +11,6 @@ st.set_page_config(
 # ---------------- CSS ----------------
 st.markdown("""
 <style>
-
 body {
     background: linear-gradient(135deg, #e8fff5, #d9f7ef);
 }
@@ -50,15 +50,9 @@ body {
 .big-number {
     font-size:48px;
     font-weight:bold;
-    color:#16a34a;
+    color:#0f766e;
     margin-top:10px;
 }
-
-.small-note {
-    color:#555;
-    font-size:14px;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -66,76 +60,123 @@ body {
 st.markdown("""
 <div class="title-box">
     <h1>🌍 เครื่องมือพยากรณ์อากาศ</h1>
-    <h4>โปรแกรมคำนวณสภาพอากาศ และบรรยากาศ</h4>
+    <h4>โปรแกรมคำนวณสภาพอากาศและบรรยากาศ</h4>
     <div>
-        <span class="badge">⚡ ใช้งานง่าย</span>
-        <span class="badge">📊 Interactive</span>
-        <span class="badge">🎨 ดีไซน์สวย</span>
+        <span class="badge">🌡️ อุณหภูมิ</span>
+        <span class="badge">💧 ความชื้น</span>
+        <span class="badge">🌬️ ลม</span>
+        <span class="badge">☁️ เมฆ</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ---------------- TEMPERATURE ----------------
+# ==================================================
+# 🌡️ TEMPERATURE
+# ==================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("🌡️ อุณหภูมิ")
 
-temp = st.number_input("อุณหภูมิ (°C)", value=28.0)
+temp = st.number_input("อุณหภูมิปัจจุบัน (°C)", value=28.0)
 
-st.markdown(f"<div class='big-number'>{temp:.1f} °C</div>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+t_min = st.number_input("🌙 อุณหภูมิต่ำสุดของวัน (°C)", value=24.0)
+t_max = st.number_input("☀️ อุณหภูมิสูงสุดของวัน (°C)", value=34.0)
 
-# ---------------- PRESSURE ----------------
+st.markdown(
+    f"<div class='big-number'>{temp:.1f} °C</div>"
+    f"ต่ำสุด {t_min:.1f}°C | สูงสุด {t_max:.1f}°C",
+    unsafe_allow_html=True
+)
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ==================================================
+# 💧 HUMIDITY
+# ==================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("📉 ความดันอากาศ")
+st.subheader("💧 ความชื้นในอากาศ")
 
-F = st.number_input("แรง (N)", value=101300.0)
-A = st.number_input("พื้นที่ (m²)", value=1.0)
-
-P = F / A if A != 0 else 0
-
-st.markdown(f"<div class='big-number'>{P:,.0f} N/m²</div>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------- HUMIDITY ----------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("💧 ความชื้น")
-
-m_real = st.number_input("มวลไอน้ำจริง (g)", value=12.5)
-m_sat = st.number_input("มวลไอน้ำอิ่มตัว (g)", value=17.3)
+m_real = st.number_input("มวลไอน้ำจริง (g)", value=12.0)
+m_sat = st.number_input("มวลไอน้ำอิ่มตัว (g)", value=18.0)
 
 rh = (m_real / m_sat) * 100 if m_sat != 0 else 0
 
-st.markdown(f"<div class='big-number'>{rh:.1f} %</div>", unsafe_allow_html=True)
-
-m_vapor = st.number_input("มวลไอน้ำ (g)", value=15.5)
 volume = st.number_input("ปริมาตรอากาศ (m³)", value=1.0)
+ah = m_real / volume if volume != 0 else 0
 
-ah = m_vapor / volume if volume != 0 else 0
+st.markdown(f"<div class='big-number'>{rh:.1f}%</div>", unsafe_allow_html=True)
+st.caption(f"💧 ความชื้นสมบูรณ์ ≈ {ah:.2f} g/m³")
 
-st.markdown(f"<div class='big-number'>{ah:.2f} g/m³</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------- RAIN ----------------
+# ==================================================
+# 🌬️ WIND
+# ==================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("🌧️ ปริมาณน้ำฝน")
+st.subheader("🌬️ ลม")
 
-rain = st.slider("เลือกปริมาณฝน (mm)", 0, 50, 5)
+wind_speed = st.slider("ความเร็วลม (km/h)", 0, 100, 12)
 
-st.markdown(f"<div class='big-number'>{rain} mm</div>", unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ---------------- CLOUD ----------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("☁️ ปริมาณเมฆบนท้องฟ้า")
-
-cloud = st.selectbox(
-    "เลือกปริมาณเมฆ",
-    ["0% - แจ่มใส", "20% - เมฆน้อย", "40% - เมฆบางส่วน",
-     "60% - เมฆมาก", "80% - เมฆหนา", "100% - ปกคลุมทั้งหมด"]
+wind_dir = st.selectbox(
+    "ทิศทางลม",
+    ["เหนือ", "ตะวันออกเฉียงเหนือ", "ตะวันออก",
+     "ตะวันออกเฉียงใต้", "ใต้", "ตะวันตกเฉียงใต้",
+     "ตะวันตก", "ตะวันตกเฉียงเหนือ"]
 )
 
-st.success(f"☁️ สภาพท้องฟ้า: {cloud}")
+st.markdown(
+    f"<div class='big-number'>{wind_speed} km/h</div>",
+    unsafe_allow_html=True
+)
+st.info(f"➡️ ลมพัดจากทิศ: {wind_dir}")
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ==================================================
+# ☁️ CLOUD TYPE
+# ==================================================
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("☁️ ประเภทเมฆ")
+
+cloud_type = st.selectbox(
+    "ชนิดเมฆ",
+    [
+        "Cumulus (ก้อนขาว)",
+        "Stratus (เป็นชั้น)",
+        "Cirrus (ริ้วบาง)",
+        "Nimbus (ฝน)",
+        "Cumulonimbus (พายุฝน)"
+    ]
+)
+
+cloud_amount = st.slider("ปริมาณเมฆ (%)", 0, 100, 50)
+
+# ประเมินโอกาสฝนคร่าวๆ
+rain_chance = cloud_amount * 0.6
+
+if cloud_type == "Nimbus (ฝน)" or cloud_type == "Cumulonimbus (พายุฝน)":
+    rain_chance += 25
+
+rain_chance = min(rain_chance, 100)
+
+st.markdown(
+    f"<div class='big-number'>{cloud_amount}%</div>",
+    unsafe_allow_html=True
+)
+
+st.warning(f"🌧️ โอกาสเกิดฝนประมาณ {rain_chance:.0f}%")
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# ==================================================
+# 🌧️ RAIN AMOUNT
+# ==================================================
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("🌧️ ปริมาณฝนโดยประมาณ")
+
+rain = st.slider("มิลลิเมตร/วัน", 0, 100, 10)
+
+st.markdown(
+    f"<div class='big-number'>{rain} mm</div>",
+    unsafe_allow_html=True
+)
+
+st.markdown("</div>", unsafe_allow_html=True)
