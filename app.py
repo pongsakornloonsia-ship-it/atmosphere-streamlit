@@ -15,33 +15,59 @@ st.markdown("""
 body {
     background: linear-gradient(135deg, #e8fff5, #d9f7ef);
 }
+
+.block-container {
+    padding-top: 2rem;
+}
+
+/* CARD */
 .card {
     background: white;
-    padding: 25px;
-    border-radius: 22px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    margin-bottom: 30px;
+    padding: 28px;
+    border-radius: 26px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    margin-bottom: 35px;
 }
+
+/* HEADER */
 .title-box {
     text-align:center;
-    padding:50px;
+    padding:55px;
     background: linear-gradient(135deg,#b8f3dc,#a7c7ff);
-    border-radius:30px;
-    margin-bottom:40px;
+    border-radius:32px;
+    margin-bottom:45px;
 }
+
 .badge {
     display:inline-block;
-    padding:10px 18px;
+    padding:10px 20px;
     background:#dcfce7;
     border-radius:25px;
     font-weight:600;
     margin:6px;
 }
+
+/* BIG NUMBER */
 .big-number {
-    font-size:46px;
-    font-weight:bold;
+    font-size:50px;
+    font-weight:800;
     color:#0f766e;
 }
+
+/* forecast row */
+.forecast-box {
+    background: linear-gradient(135deg,#ecfeff,#f0fdf4);
+    padding:18px;
+    border-radius:18px;
+    text-align:center;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+
+.day-title {
+    font-size:18px;
+    font-weight:700;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -49,12 +75,12 @@ body {
 st.markdown("""
 <div class="title-box">
 <h1>🌍 เครื่องมือพยากรณ์อากาศ</h1>
-<h4>ระบบวิเคราะห์สภาพอากาศประจำวัน</h4>
+<h4>แดชบอร์ดวิเคราะห์สภาพอากาศรายสัปดาห์</h4>
 <span class="badge">🌡️ อุณหภูมิ</span>
 <span class="badge">💧 ความชื้น</span>
 <span class="badge">🌬️ ลม</span>
 <span class="badge">☁️ เมฆ</span>
-<span class="badge">📊 พยากรณ์</span>
+<span class="badge">📅 7 วัน</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -62,11 +88,11 @@ st.markdown("""
 # 🌡️ TEMPERATURE
 # ==================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("🌡️ อุณหภูมิ")
+st.subheader("🌡️ อุณหภูมิวันนี้")
 
 temp = st.number_input("อุณหภูมิปัจจุบัน (°C)", value=29.0)
-t_min = st.number_input("ต่ำสุดของวัน (°C)", value=25.0)
-t_max = st.number_input("สูงสุดของวัน (°C)", value=35.0)
+t_min = st.number_input("ต่ำสุดวันนี้ (°C)", value=25.0)
+t_max = st.number_input("สูงสุดวันนี้ (°C)", value=35.0)
 
 st.markdown(
     f"<div class='big-number'>{temp:.1f}°C</div>"
@@ -85,8 +111,8 @@ m_real = st.number_input("มวลไอน้ำจริง (g)", value=14.0)
 m_sat = st.number_input("มวลไอน้ำอิ่มตัว (g)", value=20.0)
 volume = st.number_input("ปริมาตรอากาศ (m³)", value=1.0)
 
-rh = (m_real / m_sat) * 100
-ah = m_real / volume
+rh = (m_real / m_sat) * 100 if m_sat else 0
+ah = m_real / volume if volume else 0
 
 st.markdown(f"<div class='big-number'>{rh:.1f}%</div>", unsafe_allow_html=True)
 st.caption(f"ความชื้นสมบูรณ์ ≈ {ah:.2f} g/m³")
@@ -101,17 +127,19 @@ st.subheader("🌬️ ลม")
 wind_speed = st.slider("ความเร็วลม (km/h)", 0, 100, 15)
 wind_dir = st.selectbox(
     "ทิศลม",
-    ["เหนือ","ตะวันออก","ใต้","ตะวันตก",
-     "ตะวันออกเฉียงเหนือ","ตะวันออกเฉียงใต้",
-     "ตะวันตกเฉียงใต้","ตะวันตกเฉียงเหนือ"]
+    [
+        "เหนือ","ตะวันออก","ใต้","ตะวันตก",
+        "ตะวันออกเฉียงเหนือ","ตะวันออกเฉียงใต้",
+        "ตะวันตกเฉียงใต้","ตะวันตกเฉียงเหนือ"
+    ]
 )
 
 st.markdown(f"<div class='big-number'>{wind_speed} km/h</div>", unsafe_allow_html=True)
-st.info(f"➡️ ทิศทางลม: {wind_dir}")
+st.info(f"➡️ ทิศลม: {wind_dir}")
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================================================
-# ☁️ CLOUD + RAIN CHANCE
+# ☁️ CLOUD + RAIN
 # ==================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("☁️ เมฆและโอกาสฝน")
@@ -146,40 +174,30 @@ st.warning(f"สภาพโดยรวม: {condition}")
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================================================
-# 📊 HOURLY GRAPH
+# 📅 7 DAY FORECAST
 # ==================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("📊 อุณหภูมิรายชั่วโมง")
+st.subheader("📅 พยากรณ์ล่วงหน้า 7 วัน")
 
-hours = list(range(0, 24))
-temps = [
-    random.uniform(t_min, t_max)
-    for _ in hours
-]
+cols = st.columns(7)
 
-df_hour = pd.DataFrame({
-    "Hour": hours,
-    "Temperature": temps
-})
+for i in range(7):
+    with cols[i]:
+        tmin = round(random.uniform(23, 27), 1)
+        tmax = round(random.uniform(32, 38), 1)
+        rain = round(random.uniform(20, 90))
+        icon = "🌧️" if rain > 60 else "🌤️"
 
-st.line_chart(df_hour.set_index("Hour"))
-st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div class="forecast-box">
+                <div class="day-title">Day {i+1}</div>
+                <h2>{icon}</h2>
+                <b>{tmin}° / {tmax}°</b><br>
+                🌧️ {rain}%
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-# ==================================================
-# 📅 3-DAY FORECAST
-# ==================================================
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("📅 พยากรณ์ล่วงหน้า 3 วัน")
-
-days = []
-for i in range(1, 4):
-    days.append({
-        "วัน": f"Day {i}",
-        "ต่ำสุด (°C)": round(random.uniform(23, 26), 1),
-        "สูงสุด (°C)": round(random.uniform(32, 37), 1),
-        "ฝน (%)": round(random.uniform(20, 90), 0)
-    })
-
-df_days = pd.DataFrame(days)
-st.table(df_days)
 st.markdown("</div>", unsafe_allow_html=True)
