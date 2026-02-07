@@ -1,126 +1,141 @@
 import streamlit as st
-import plotly.graph_objects as go
 
-# ---------------- PAGE CONFIG ----------------
+# ---------------- CONFIG ----------------
 st.set_page_config(
-    page_title="Earth Atmosphere Explorer",
-    page_icon="🌍",
+    page_title="เครื่องมือพยากรณ์อากาศ",
+    page_icon="🌤️",
     layout="wide"
 )
 
-# ---------------- CSS STYLE ----------------
+# ---------------- CSS ----------------
 st.markdown("""
 <style>
+
 body {
-    background: linear-gradient(to bottom,#0b132b,#1c2541);
+    background: linear-gradient(135deg, #e8fff5, #d9f7ef);
 }
-.big-title {
-    font-size:60px;
-    font-weight:800;
-    text-align:center;
-    background: linear-gradient(to right,#5bc0be,#f1faee);
-    -webkit-background-clip:text;
-    color:transparent;
+
+.block-container {
+    padding-top: 2rem;
 }
-.subtitle {
-    text-align:center;
-    font-size:22px;
-    color:#ddd;
-}
+
+/* CARD */
 .card {
-    background: rgba(255,255,255,0.12);
-    padding:25px;
-    border-radius:20px;
-    box-shadow:0 0 20px rgba(0,0,0,0.3);
+    background: white;
+    padding: 25px;
+    border-radius: 22px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
 }
+
+/* HEADER */
+.title-box {
+    text-align:center;
+    padding:50px;
+    background: linear-gradient(135deg,#b8f3dc,#a7c7ff);
+    border-radius:30px;
+    margin-bottom:40px;
+}
+
+.badge {
+    display:inline-block;
+    padding:10px 18px;
+    background:#dcfce7;
+    border-radius:25px;
+    font-weight:600;
+    margin:6px;
+}
+
+/* BIG NUMBER */
+.big-number {
+    font-size:48px;
+    font-weight:bold;
+    color:#16a34a;
+    margin-top:10px;
+}
+
+.small-note {
+    color:#555;
+    font-size:14px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------- HEADER ----------------
-st.markdown('<div class="big-title">🌍 Earth Atmosphere Explorer</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">สำรวจชั้นบรรยากาศโลกแบบอินเทอร์แอคทีฟ</div>', unsafe_allow_html=True)
-st.divider()
+st.markdown("""
+<div class="title-box">
+    <h1>🌍 เครื่องมือพยากรณ์อากาศ</h1>
+    <h4>โปรแกรมคำนวณสภาพอากาศ และบรรยากาศ</h4>
+    <div>
+        <span class="badge">⚡ ใช้งานง่าย</span>
+        <span class="badge">📊 Interactive</span>
+        <span class="badge">🎨 ดีไซน์สวย</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-# ---------------- DATA ----------------
-layers = {
-    "Troposphere": {
-        "height": "0–12 km",
-        "temp": "15°C → -56°C",
-        "desc": "ชั้นที่มนุษย์อาศัยอยู่ เกิดสภาพอากาศ เมฆ ฝน",
-    },
-    "Stratosphere": {
-        "height": "12–50 km",
-        "temp": "-56°C → 0°C",
-        "desc": "มีโอโซน ดูดซับรังสี UV",
-    },
-    "Mesosphere": {
-        "height": "50–85 km",
-        "temp": "0°C → -90°C",
-        "desc": "อุกกาบาตไหม้ในชั้นนี้",
-    },
-    "Thermosphere": {
-        "height": "85–600 km",
-        "temp": "สูงกว่า 1000°C",
-        "desc": "เกิดแสงออโรรา",
-    },
-    "Exosphere": {
-        "height": "600+ km",
-        "temp": "เบาบางมาก",
-        "desc": "ขอบเขตสู่อวกาศ",
-    }
-}
+# ---------------- TEMPERATURE ----------------
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("🌡️ อุณหภูมิ")
 
-# ---------------- SIDEBAR ----------------
-st.sidebar.title("🚀 Control Panel")
-selected = st.sidebar.selectbox("เลือกชั้นบรรยากาศ", list(layers.keys()))
+temp = st.number_input("อุณหภูมิ (°C)", value=28.0)
 
-st.sidebar.markdown("---")
-st.sidebar.write("📘 เว็บนี้สร้างด้วย Python + Streamlit")
+st.markdown(f"<div class='big-number'>{temp:.1f} °C</div>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- MAIN CONTENT ----------------
-col1, col2 = st.columns([1.2, 1])
+# ---------------- PRESSURE ----------------
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("📉 ความดันอากาศ")
 
-with col1:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.subheader(f"📍 {selected}")
-    st.write(f"**ความสูง:** {layers[selected]['height']}")
-    st.write(f"**อุณหภูมิ:** {layers[selected]['temp']}")
-    st.write(layers[selected]['desc'])
-    st.markdown("</div>", unsafe_allow_html=True)
+F = st.number_input("แรง (N)", value=101300.0)
+A = st.number_input("พื้นที่ (m²)", value=1.0)
 
-# ---------------- 3D GRAPH ----------------
-with col2:
+P = F / A if A != 0 else 0
 
-    heights = [0,12,50,85,600,800]
-    names = list(layers.keys()) + ["Space"]
+st.markdown(f"<div class='big-number'>{P:,.0f} N/m²</div>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-    fig = go.Figure()
+# ---------------- HUMIDITY ----------------
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("💧 ความชื้น")
 
-    for i in range(len(heights)-1):
-        fig.add_trace(go.Scatter3d(
-            x=[0,0],
-            y=[0,0],
-            z=[heights[i],heights[i+1]],
-            mode='lines',
-            line=dict(width=20),
-            name=names[i]
-        ))
+m_real = st.number_input("มวลไอน้ำจริง (g)", value=12.5)
+m_sat = st.number_input("มวลไอน้ำอิ่มตัว (g)", value=17.3)
 
-    fig.update_layout(
-        height=500,
-        scene=dict(
-            xaxis=dict(visible=False),
-            yaxis=dict(visible=False),
-            zaxis=dict(title="Altitude (km)")
-        ),
-        margin=dict(l=0,r=0,t=0,b=0)
-    )
+rh = (m_real / m_sat) * 100 if m_sat != 0 else 0
 
-    st.plotly_chart(fig, use_container_width=True)
+st.markdown(f"<div class='big-number'>{rh:.1f} %</div>", unsafe_allow_html=True)
 
-# ---------------- FOOTER ----------------
-st.divider()
-st.markdown(
-    "<center>🌎 Atmosphere Project | Made with Streamlit</center>",
-    unsafe_allow_html=True
+m_vapor = st.number_input("มวลไอน้ำ (g)", value=15.5)
+volume = st.number_input("ปริมาตรอากาศ (m³)", value=1.0)
+
+ah = m_vapor / volume if volume != 0 else 0
+
+st.markdown(f"<div class='big-number'>{ah:.2f} g/m³</div>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------- RAIN ----------------
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("🌧️ ปริมาณน้ำฝน")
+
+rain = st.slider("เลือกปริมาณฝน (mm)", 0, 50, 5)
+
+st.markdown(f"<div class='big-number'>{rain} mm</div>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------------- CLOUD ----------------
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("☁️ ปริมาณเมฆบนท้องฟ้า")
+
+cloud = st.selectbox(
+    "เลือกปริมาณเมฆ",
+    ["0% - แจ่มใส", "20% - เมฆน้อย", "40% - เมฆบางส่วน",
+     "60% - เมฆมาก", "80% - เมฆหนา", "100% - ปกคลุมทั้งหมด"]
 )
+
+st.success(f"☁️ สภาพท้องฟ้า: {cloud}")
+
+st.markdown('</div>', unsafe_allow_html=True)
