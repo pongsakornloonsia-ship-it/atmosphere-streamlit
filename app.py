@@ -1,6 +1,57 @@
 import streamlit as st
 
 st.set_page_config(
+    page_title="เครื่องมือพยากรณ์อากาศ",
+    page_icon="🌤️",
+    layout="wide"
+)
+
+# ---------- CUSTOM CSS ----------
+st.markdown("""
+<style>
+
+body {
+    background: linear-gradient(135deg, #e8fff5, #d9f7ef);
+}
+
+.block-container {
+    padding-top: 2rem;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.title-box {
+    text-align:center;
+    padding:40px;
+    background: linear-gradient(135deg,#a8edea,#fed6e3);
+    border-radius:25px;
+    margin-bottom:30px;
+}
+
+.big-number {
+    font-size:48px;
+    font-weight:bold;
+    color:#16a34a;
+}
+
+.badge {
+    display:inline-block;
+    padding:8px 14px;
+    background:#dcfce7;
+    border-radius:20px;
+    font-weight:600;
+}
+
+</style>
+""", unsafe_allow_html=True)import streamlit as st
+
+st.set_page_config(
     page_title="Earth Atmosphere",
     page_icon="🌍",
     layout="wide"
