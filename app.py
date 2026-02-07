@@ -20,18 +20,18 @@ body {
 
 .card {
     background:white;
-    padding:30px;
-    border-radius:30px;
-    box-shadow:0 14px 34px rgba(0,0,0,0.12);
-    margin-bottom:35px;
+    padding:34px;
+    border-radius:36px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.14);
+    margin-bottom:38px;
 }
 
 .title-box {
     text-align:center;
-    padding:60px;
+    padding:65px;
     background:linear-gradient(135deg,#99f6e4,#93c5fd);
-    border-radius:36px;
-    margin-bottom:45px;
+    border-radius:42px;
+    margin-bottom:55px;
 }
 
 .badge {
@@ -44,30 +44,81 @@ body {
 }
 
 .big-number {
-    font-size:50px;
+    font-size:52px;
     font-weight:900;
     color:#0f766e;
 }
 
 .formula-box {
     background:#f0fdfa;
-    padding:16px;
-    border-radius:18px;
-    border-left:6px solid #14b8a6;
-    margin-top:12px;
-    font-size:15px;
-}
-
-.forecast-box {
-    background:linear-gradient(135deg,#ecfeff,#f0fdf4);
     padding:18px;
     border-radius:22px;
+    border-left:7px solid #14b8a6;
+    margin-top:14px;
+}
+
+/* -------- CLOUD VISUAL -------- */
+
+.cloud-area {
+    display:flex;
+    justify-content:center;
+    gap:25px;
+    margin-top:25px;
+}
+
+.cloud {
+    width:150px;
+    height:85px;
+    background:#e5e7eb;
+    border-radius:55px;
+    position:relative;
+    box-shadow:0 12px 22px rgba(0,0,0,0.18);
+}
+
+.cloud::before,
+.cloud::after {
+    content:"";
+    position:absolute;
+    background:#e5e7eb;
+    width:75px;
+    height:75px;
+    border-radius:50%;
+    top:-38px;
+}
+
+.cloud::before { left:20px; }
+.cloud::after { right:28px; }
+
+.cloud.dark,
+.cloud.dark::before,
+.cloud.dark::after {
+    background:#9ca3af;
+}
+
+.cloud.tall { height:105px; }
+
+/* rain animation */
+.rain {
+    font-size:30px;
+    animation: fall 1.4s infinite;
+}
+
+@keyframes fall {
+    0% {opacity:0; transform:translateY(0);}
+    100% {opacity:1; transform:translateY(26px);}
+}
+
+/* forecast */
+.forecast-box {
+    background:linear-gradient(135deg,#ecfeff,#f0fdf4);
+    padding:20px;
+    border-radius:22px;
     text-align:center;
-    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    box-shadow:0 8px 20px rgba(0,0,0,0.1);
 }
 
 .day-title {
-    font-weight:800;
+    font-weight:900;
     font-size:18px;
 }
 </style>
@@ -77,8 +128,9 @@ body {
 st.markdown("""
 <div class="title-box">
 <h1>🌍 เครื่องมือพยากรณ์อากาศ</h1>
-<h4>แดชบอร์ดคำนวณสภาพอากาศพร้อมสูตร</h4>
+<h4>แดชบอร์ดคำนวณสภาพอากาศเชิงการศึกษา</h4>
 <span class="badge">🌡️ อุณหภูมิ</span>
+<span class="badge">📉 ความดัน</span>
 <span class="badge">💧 ความชื้น</span>
 <span class="badge">🌬️ ลม</span>
 <span class="badge">☁️ เมฆ</span>
@@ -101,11 +153,29 @@ st.caption(f"ต่ำสุด {t_min:.1f}°C | สูงสุด {t_max:.1f}�
 
 st.markdown("""
 <div class="formula-box">
-<b>สูตร:</b><br>
-ไม่มีการคำนวณ → รับค่าจากผู้ใช้โดยตรง
+<b>ข้อมูล:</b> รับค่าจากผู้ใช้โดยตรง
 </div>
 """, unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
+# ==================================================
+# 📉 PRESSURE
+# ==================================================
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("📉 ความดันอากาศ")
+
+F = st.slider("แรง (N)", 0.0, 200000.0, 101300.0)
+A = st.slider("พื้นที่ (m²)", 0.1, 20.0, 1.0)
+
+P = F / A if A else 0
+
+st.markdown(f"<div class='big-number'>{P:,.0f} Pa</div>", unsafe_allow_html=True)
+
+st.markdown("""
+<div class="formula-box">
+<b>สูตร:</b> P = F ÷ A
+</div>
+""", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================================================
@@ -131,7 +201,6 @@ RH = (มวลไอน้ำจริง ÷ มวลไอน้ำอิ่�
 AH = มวลไอน้ำ ÷ ปริมาตรอากาศ
 </div>
 """, unsafe_allow_html=True)
-
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================================================
@@ -152,17 +221,16 @@ st.markdown(f"<div class='big-number'>{wind_speed} km/h</div>", unsafe_allow_htm
 
 st.markdown("""
 <div class="formula-box">
-<b>ใช้ค่าโดยตรง:</b> ความเร็วลม & ทิศลมจากผู้ใช้
+<b>ข้อมูล:</b> รับค่าจากผู้ใช้
 </div>
 """, unsafe_allow_html=True)
-
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================================================
 # ☁️ CLOUD + RAIN
 # ==================================================
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("☁️ เมฆ & โอกาสฝน")
+st.subheader("☁️ เมฆและโอกาสฝน")
 
 cloud_type = st.selectbox(
     "ชนิดเมฆ",
@@ -171,14 +239,29 @@ cloud_type = st.selectbox(
 
 cloud_amount = st.slider("ปริมาณเมฆ (%)", 0, 100, 60)
 
-rain_chance = cloud_amount*0.4 + rh*0.4
+cloud_class = "cloud"
+if cloud_type in ["Nimbus","Cumulonimbus"]:
+    cloud_class += " dark"
+if cloud_type == "Cumulonimbus":
+    cloud_class += " tall"
 
+drops = "💧💧💧" if cloud_amount > 60 else ""
+
+st.markdown(
+    f"""
+    <div class="cloud-area">
+        <div class="{cloud_class}"></div>
+        <div class="rain">{drops}</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+rain_chance = cloud_amount*0.4 + rh*0.4
 if cloud_type in ["Nimbus","Cumulonimbus"]:
     rain_chance += 20
-if wind_speed > 40:
-    rain_chance += 10
 
-rain_chance = min(rain_chance, 100)
+rain_chance = min(rain_chance,100)
 
 st.markdown(f"<div class='big-number'>{rain_chance:.0f}%</div>", unsafe_allow_html=True)
 
@@ -186,11 +269,9 @@ st.markdown("""
 <div class="formula-box">
 <b>สูตรโอกาสฝน:</b><br>
 (ปริมาณเมฆ × 0.4) + (RH × 0.4)<br>
-+20 ถ้าเป็น Nimbus / Cumulonimbus<br>
-+10 ถ้าลมแรง &gt; 40 km/h
++20 ถ้าเป็น Nimbus หรือ Cumulonimbus
 </div>
 """, unsafe_allow_html=True)
-
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================================================
