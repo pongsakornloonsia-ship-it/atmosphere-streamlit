@@ -350,3 +350,28 @@ st.line_chart(pressures)
 
 st.subheader("🌧️ โอกาสฝน")
 st.line_chart(rains)
+# =====================================================
+# 👤 ผู้จัดทำ
+# =====================================================
+
+st.markdown("""
+<div style="
+    margin-top:60px;
+    padding:25px;
+    text-align:center;
+    border-radius:22px;
+    background:linear-gradient(135deg,#d1fae5,#bfdbfe);
+    box-shadow:0 8px 20px rgba(0,0,0,0.08);
+">
+    <h3>👤 ผู้จัดทำ</h3>
+    <p style="font-size:18px;font-weight:600;">
+        พงศกร ลุ่นเซียะ
+    </p>
+    <p style="font-size:16px;">
+        ม.1/7 เลขที่ 25
+    </p>
+    <p style="color:#555;">
+        โครงงานระบบพยากรณ์อากาศด้วย Streamlit
+    </p>
+</div>
+""", unsafe_allow_html=True)
