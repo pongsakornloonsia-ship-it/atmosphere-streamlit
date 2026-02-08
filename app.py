@@ -292,3 +292,68 @@ for i in range(7):
         📉 {pres} Pa
         </div>
         """, unsafe_allow_html=True)
+        # =====================================================
+# 📊 GRAPH SECTION
+# =====================================================
+
+import matplotlib.pyplot as plt
+
+st.markdown("## 📊 กราฟพยากรณ์ 7 วัน")
+
+days = []
+tmins = []
+tmaxs = []
+hums = []
+pressures = []
+rains = []
+
+for i in range(7):
+    days.append((today + datetime.timedelta(days=i)).strftime("%d/%m"))
+
+    tmin = round(random.uniform(22, 27), 1)
+    tmax = round(tmin + random.uniform(4, 9), 1)
+
+    hum = random.randint(55, 95)
+    pres = random.randint(100500, 101800)
+    cloud = random.randint(0, 100)
+    rainp = min(100, int(cloud * 0.8))
+
+    tmins.append(tmin)
+    tmaxs.append(tmax)
+    hums.append(hum)
+    pressures.append(pres)
+    rains.append(rainp)
+
+# ---------------- TEMPERATURE GRAPH ----------------
+
+fig1, ax1 = plt.subplots()
+ax1.plot(days, tmins, marker="o", label="ต่ำสุด")
+ax1.plot(days, tmaxs, marker="o", label="สูงสุด")
+ax1.set_title("🌡️ อุณหภูมิ 7 วัน")
+ax1.set_ylabel("°C")
+ax1.legend()
+st.pyplot(fig1)
+
+# ---------------- HUMIDITY GRAPH ----------------
+
+fig2, ax2 = plt.subplots()
+ax2.plot(days, hums, marker="o")
+ax2.set_title("💧 ความชื้น 7 วัน")
+ax2.set_ylabel("%")
+st.pyplot(fig2)
+
+# ---------------- PRESSURE GRAPH ----------------
+
+fig3, ax3 = plt.subplots()
+ax3.plot(days, pressures, marker="o")
+ax3.set_title("📉 ความดันอากาศ 7 วัน")
+ax3.set_ylabel("Pa")
+st.pyplot(fig3)
+
+# ---------------- RAIN GRAPH ----------------
+
+fig4, ax4 = plt.subplots()
+ax4.plot(days, rains, marker="o")
+ax4.set_title("🌧️ โอกาสฝน 7 วัน")
+ax4.set_ylabel("%")
+st.pyplot(fig4)
