@@ -248,3 +248,86 @@ elif page == "แผนที่":
     })
 
     st.map(map_df)
+    # =====================================================
+# LOCATION BASED WEATHER (APPEND)
+# =====================================================
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("📍 ข้อมูลพื้นที่")
+
+location_data = {
+    "กรุงเทพฯ": {"temp": 30, "hum": 70},
+    "เชียงใหม่": {"temp": 26, "hum": 60},
+    "ภูเก็ต": {"temp": 29, "hum": 75},
+    "ขอนแก่น": {"temp": 28, "hum": 65},
+    "สงขลา": {"temp": 29, "hum": 78},
+}
+
+selected_city = st.sidebar.selectbox(
+    "เลือกพื้นที่",
+    list(location_data.keys()),
+    key="city_weather"
+)
+
+base_temp = location_data[selected_city]["temp"]
+base_hum = location_data[selected_city]["hum"]
+
+st.sidebar.info(
+    f"""
+🌡️ ค่าเริ่มต้น: {base_temp} °C  
+💧 ความชื้น: {base_hum} %
+"""
+)
+
+# ---------------- APPLY TO MAIN PAGE ----------------
+
+st.markdown(f"""
+<div class="card">
+<h3>📍 พื้นที่ที่เลือก</h3>
+<b>{selected_city}</b><br>
+🌡️ อุณหภูมิพื้นฐาน: {base_temp} °C<br>
+💧 ความชื้นพื้นฐาน: {base_hum} %
+</div>
+""", unsafe_allow_html=True)
+
+# Override ค่าเดิมถ้าอยากใช้เป็น default
+temp = st.number_input(
+    "อุณหภูมิ (°C)",
+    value=float(base_temp),
+    key="temp_location"
+)
+
+m_real = st.number_input(
+    "มวลไอน้ำจริง (g)",
+    value=base_hum / 4,
+    key="mreal_location"
+)
+# =====================================================
+# WEATHER RELATIONSHIP (APPEND)
+# =====================================================
+
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.subheader("🌦️ การประเมินสภาพอากาศรวม")
+
+cloud_cover = st.slider("ปริมาณเมฆ (%)", 0, 100, 40)
+
+cloud_icons = ["☀️","🌤️","⛅","☁️","🌥️","🌧️"]
+icon = cloud_icons[min(5, cloud_cover // 20)]
+
+wind_speed = st.slider("ความเร็วลม (km/h)", 0, 120, 15)
+
+rain_chance = min(100, int((cloud_cover + RH) / 2))
+
+st.markdown(f"""
+<div class="formula">
+สูตร: โอกาสฝน ≈ (ความชื้นสัมพัทธ์ + เมฆ) / 2
+</div>
+
+<div class="big-number">
+{icon} โอกาสฝน {rain_chance} %
+</div>
+
+🌬️ ความเร็วลม: {wind_speed} km/h
+""", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
