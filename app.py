@@ -1,7 +1,5 @@
 import streamlit as st
 import requests
-import math
-import streamlit.components.v1 as components
 
 # ---------------- CONFIG ----------------
 st.set_page_config(
@@ -15,7 +13,7 @@ st.markdown("""
 <style>
 
 body {
-    background: linear-gradient(135deg,#c7f9ff,#e0ffe9);
+    background: linear-gradient(135deg, #e8fff5, #d9f7ef);
 }
 
 .block-container {
@@ -24,10 +22,10 @@ body {
 
 /* CARD */
 .card {
-    background: rgba(255,255,255,0.95);
+    background: white;
     padding: 25px;
     border-radius: 22px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
     margin-bottom: 30px;
 }
 
@@ -35,12 +33,11 @@ body {
 .title-box {
     text-align:center;
     padding:50px;
-    background: linear-gradient(135deg,#9ee7ff,#baffc9);
+    background: linear-gradient(135deg,#b8f3dc,#a7c7ff);
     border-radius:30px;
     margin-bottom:40px;
 }
 
-/* BADGE */
 .badge {
     display:inline-block;
     padding:10px 18px;
@@ -54,15 +51,8 @@ body {
 .big-number {
     font-size:48px;
     font-weight:bold;
-    color:#047857;
+    color:#16a34a;
     margin-top:10px;
-}
-
-.formula-box {
-    background:#f0fdf4;
-    padding:10px;
-    border-radius:12px;
-    font-family:monospace;
 }
 
 </style>
@@ -72,205 +62,185 @@ body {
 st.markdown("""
 <div class="title-box">
     <h1>🌍 เครื่องมือพยากรณ์อากาศ</h1>
-    <h4>ระบบคำนวณบรรยากาศ + ตรวจพิกัดอัตโนมัติ</h4>
+    <h4>โปรแกรมคำนวณสภาพอากาศ และบรรยากาศ</h4>
     <div>
-        <span class="badge">📍 Location</span>
-        <span class="badge">📊 Formula</span>
-        <span class="badge">7 Days</span>
+        <span class="badge">⚡ ใช้งานง่าย</span>
+        <span class="badge">📊 Interactive</span>
+        <span class="badge">🎨 ดีไซน์สวย</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # =====================================================
-# 📍 GEOLOCATION
+# 📍 GEOLOCATION (IP BASED)
 # =====================================================
 
 st.subheader("📍 ตรวจสอบตำแหน่งปัจจุบัน")
 
-geo_js = """
-<script>
-navigator.geolocation.getCurrentPosition(
-    (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
+def get_location_ip():
+    try:
+        r = requests.get("https://ipapi.co/json/", timeout=10)
+        data = r.json()
+        return (
+            data.get("latitude"),
+            data.get("longitude"),
+            data.get("city"),
+            data.get("country_name"),
+        )
+    except:
+        return None, None, None, None
 
-        window.parent.postMessage(
-            { type: "streamlit:setComponentValue",
-              value: {lat: lat, lon: lon} },
-            "*"
-        );
-    }
-);
-</script>
-"""
-
-coords = components.html(geo_js, height=0)
 
 if "user_lat" not in st.session_state:
-    st.session_state.user_lat = None
-    st.session_state.user_lon = None
 
-if coords:
-    st.session_state.user_lat = coords["lat"]
-    st.session_state.user_lon = coords["lon"]
+    lat, lon, city, country = get_location_ip()
+
+    st.session_state.user_lat = lat
+    st.session_state.user_lon = lon
+    st.session_state.city = city
+    st.session_state.country = country
+
 
 if st.session_state.user_lat:
+
     st.success(
         f"Lat: {st.session_state.user_lat:.4f} | "
         f"Lon: {st.session_state.user_lon:.4f}"
     )
-else:
-    st.info("กำลังขอพิกัดจากอุปกรณ์...")
 
-# =====================================================
-# 🌍 REVERSE GEOCODE
-# =====================================================
+    st.write("📍 พื้นที่โดยประมาณ:")
+    st.code(f"{st.session_state.city}, {st.session_state.country}")
 
-def reverse_geocode(lat, lon):
-
-    url = (
-        "https://nominatim.openstreetmap.org/reverse"
-        f"?format=json&lat={lat}&lon={lon}"
-    )
-
-    headers = {"User-Agent": "streamlit-weather"}
-
-    try:
-        r = requests.get(url, headers=headers, timeout=10)
-        if r.status_code == 200:
-            data = r.json()
-            return data.get("display_name", "ไม่ทราบพื้นที่")
-    except:
-        pass
-
-    return "ไม่สามารถระบุพื้นที่"
-
-
-if st.session_state.user_lat:
-
-    place_name = reverse_geocode(
-        st.session_state.user_lat,
-        st.session_state.user_lon
-    )
-
-    st.write("📌 พื้นที่โดยประมาณ:")
-    st.code(place_name)
-
-# =====================================================
-# 🗺 MAP
-# =====================================================
-
-if st.session_state.user_lat:
     st.map({
         "lat": [st.session_state.user_lat],
         "lon": [st.session_state.user_lon]
     })
 
-# =====================================================
-# 🌡 TEMPERATURE
-# =====================================================
+else:
+    st.warning("ไม่สามารถตรวจตำแหน่งอัตโนมัติได้")
 
+# ---------------- TEMPERATURE ----------------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("🌡️ อุณหภูมิ")
 
 temp = st.number_input("อุณหภูมิ (°C)", value=28.0)
 
-tmax = temp + 4
-tmin = temp - 5
-
 st.markdown(f"<div class='big-number'>{temp:.1f} °C</div>", unsafe_allow_html=True)
-
-st.write("คาดการณ์วันนี้")
-st.write(f"สูงสุด: {tmax:.1f} °C | ต่ำสุด: {tmin:.1f} °C")
-
 st.markdown('</div>', unsafe_allow_html=True)
 
-# =====================================================
-# 📉 PRESSURE
-# =====================================================
-
+# ---------------- PRESSURE ----------------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("📉 ความดันอากาศ")
 
 F = st.number_input("แรง (N)", value=101300.0)
 A = st.number_input("พื้นที่ (m²)", value=1.0)
 
-P = F / A if A else 0
+P = F / A if A != 0 else 0
 
-st.markdown("<div class='formula-box'>P = F / A</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='big-number'>{P:,.0f} Pa</div>", unsafe_allow_html=True)
-
+st.markdown(f"<div class='big-number'>{P:,.0f} N/m²</div>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# =====================================================
-# 💧 HUMIDITY
-# =====================================================
-
+# ---------------- HUMIDITY ----------------
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("💧 ความชื้น")
 
 m_real = st.number_input("มวลไอน้ำจริง (g)", value=12.5)
 m_sat = st.number_input("มวลไอน้ำอิ่มตัว (g)", value=17.3)
 
-rh = (m_real / m_sat) * 100 if m_sat else 0
+rh = (m_real / m_sat) * 100 if m_sat != 0 else 0
 
-st.markdown("<div class='formula-box'>RH = (mจริง / mอิ่มตัว) × 100</div>", unsafe_allow_html=True)
+st.write("สูตร: RH = (มวลจริง / มวลอิ่มตัว) × 100")
+
 st.markdown(f"<div class='big-number'>{rh:.1f} %</div>", unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
+m_vapor = st.number_input("มวลไอน้ำ (g)", value=15.5)
+volume = st.number_input("ปริมาตรอากาศ (m³)", value=1.0)
 
-# =====================================================
-# 🌬 WIND
-# =====================================================
+ah = m_vapor / volume if volume != 0 else 0
 
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("🌬 ลม")
+st.write("สูตร: AH = มวลไอน้ำ / ปริมาตร")
 
-wind_speed = st.slider("ความเร็วลม (km/h)", 0, 120, 12)
-wind_dir = st.selectbox("ทิศทางลม", ["เหนือ","ตะวันออก","ใต้","ตะวันตก","ตะวันออกเฉียงเหนือ",
-                                     "ตะวันออกเฉียงใต้","ตะวันตกเฉียงใต้","ตะวันตกเฉียงเหนือ"])
-
-st.markdown(f"<div class='big-number'>{wind_speed} km/h</div>", unsafe_allow_html=True)
-st.success(f"➡ ทิศทาง: {wind_dir}")
+st.markdown(f"<div class='big-number'>{ah:.2f} g/m³</div>", unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# =====================================================
-# ☁ CLOUD + RAIN
-# =====================================================
-
+# ---------------- RAIN ----------------
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("☁ เมฆและโอกาสฝน")
+st.subheader("🌧️ ปริมาณน้ำฝน")
 
-cloud_cover = st.slider("ปริมาณเมฆ (%)", 0, 100, 40)
+rain = st.slider("เลือกปริมาณฝน (mm)", 0, 50, 5)
 
-rain_prob = min(100, cloud_cover + rh/2)
-
-st.markdown(f"<div class='big-number'>{cloud_cover}%</div>", unsafe_allow_html=True)
-
-st.write(f"🌧 โอกาสฝน: {rain_prob:.0f}%")
-
-st.progress(int(rain_prob))
+st.markdown(f"<div class='big-number'>{rain} mm</div>", unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# =====================================================
-# 📆 7 DAY FORECAST
-# =====================================================
-
+# ---------------- CLOUD ----------------
 st.markdown('<div class="card">', unsafe_allow_html=True)
-st.subheader("📆 พยากรณ์ 7 วัน")
+st.subheader("☁️ ปริมาณเมฆบนท้องฟ้า")
 
-base = temp
+cloud = st.selectbox(
+    "เลือกปริมาณเมฆ",
+    ["0%", "20%", "40%", "60%", "80%", "100%"]
+)
 
-for i in range(1,8):
+st.success(f"☁️ เมฆปกคลุม: {cloud}")
 
-    t_hi = base + math.sin(i)*3 + 3
-    t_lo = base - 5 + math.cos(i)*2
+st.markdown('</div>', unsafe_allow_html=True)
+# =====================================================
+# 📆 FORECAST 7 DAYS (FROM OPEN-METEO)
+# =====================================================
 
-    st.write(
-        f"Day {i}: 🌡 {t_lo:.1f}°C - {t_hi:.1f}°C | "
-        f"☁ {cloud_cover}% | 🌧 {rain_prob:.0f}%"
+st.subheader("📆 พยากรณ์อากาศ 7 วัน")
+
+if st.session_state.get("user_lat"):
+
+    lat = st.session_state.user_lat
+    lon = st.session_state.user_lon
+
+    url = (
+        "https://api.open-meteo.com/v1/forecast"
+        f"?latitude={lat}&longitude={lon}"
+        "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,cloud_cover_mean"
+        "&timezone=auto"
     )
 
-st.markdown('</div>', unsafe_allow_html=True)
+    try:
+        r = requests.get(url, timeout=10)
+        data = r.json()
+
+        days = data["daily"]["time"]
+        tmax = data["daily"]["temperature_2m_max"]
+        tmin = data["daily"]["temperature_2m_min"]
+        rain_prob = data["daily"]["precipitation_probability_max"]
+        cloud_avg = data["daily"]["cloud_cover_mean"]
+
+        for i in range(7):
+
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+
+            st.write(f"📅 วันที่: {days[i]}")
+
+            col1, col2, col3, col4 = st.columns(4)
+
+            with col1:
+                st.metric("🌡️ สูงสุด", f"{tmax[i]} °C")
+                st.metric("🌡️ ต่ำสุด", f"{tmin[i]} °C")
+
+            with col2:
+                st.metric("☁️ เมฆเฉลี่ย", f"{cloud_avg[i]} %")
+
+            with col3:
+                st.metric("🌧️ โอกาสฝน", f"{rain_prob[i]} %")
+
+            with col4:
+                if rain_prob[i] > 60:
+                    st.progress(rain_prob[i] / 100)
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error("โหลดพยากรณ์ 7 วันไม่สำเร็จ")
+        st.code(e)
+
+else:
+    st.warning("ยังไม่ทราบตำแหน่งผู้ใช้")
