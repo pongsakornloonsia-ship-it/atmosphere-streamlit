@@ -20,7 +20,6 @@ st.markdown("""
     padding-top: 2rem;
 }
 
-/* HEADER */
 .title-box {
     text-align:center;
     padding:60px;
@@ -30,7 +29,6 @@ st.markdown("""
     box-shadow: 0 20px 50px rgba(0,0,0,0.25);
 }
 
-/* BADGE */
 .badge {
     display:inline-block;
     padding:10px 20px;
@@ -41,7 +39,6 @@ st.markdown("""
     color:white;
 }
 
-/* CARD */
 .card {
     background: rgba(255,255,255,0.6);
     padding:32px;
@@ -50,14 +47,19 @@ st.markdown("""
     margin-bottom:35px;
 }
 
-/* TEXT */
 .big-number {
     font-size:48px;
     font-weight:800;
-    color:#111827;
 }
 
-/* WEEK */
+.formula {
+    background:#f8fafc;
+    padding:12px;
+    border-radius:12px;
+    margin-top:10px;
+    font-size:15px;
+}
+
 .week {
     display:grid;
     grid-template-columns: repeat(7,1fr);
@@ -80,11 +82,6 @@ st.markdown("""
 <div class="title-box">
     <h1>🌍 เครื่องมือพยากรณ์อากาศ</h1>
     <h4>โปรแกรมคำนวณสภาพอากาศ และบรรยากาศ</h4>
-    <div>
-        <span class="badge">⚡ ใช้งานง่าย</span>
-        <span class="badge">📊 Interactive</span>
-        <span class="badge">🎨 ดีไซน์สวย</span>
-    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -93,6 +90,13 @@ st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("🌡️ อุณหภูมิ")
 
 temp = st.number_input("อุณหภูมิ (°C)", value=28.0)
+
+st.markdown("""
+<div class="formula">
+<b>สูตร:</b> ค่าอุณหภูมิที่กรอกเข้าไปโดยตรง (°C)
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown(f"<div class='big-number'>{temp:.1f} °C</div>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -104,6 +108,13 @@ F = st.number_input("แรง (N)", value=101300.0)
 A = st.number_input("พื้นที่ (m²)", value=1.0)
 
 P = F / A if A != 0 else 0
+
+st.markdown("""
+<div class="formula">
+<b>สูตร:</b> P = F / A
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown(f"<div class='big-number'>{P:,.0f} N/m²</div>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -115,12 +126,26 @@ m_real = st.number_input("มวลไอน้ำจริง (g)", value=12.5)
 m_sat = st.number_input("มวลไอน้ำอิ่มตัว (g)", value=17.3)
 
 rh = (m_real / m_sat) * 100 if m_sat != 0 else 0
+
+st.markdown("""
+<div class="formula">
+<b>ความชื้นสัมพัทธ์:</b> RH = (mจริง / mอิ่มตัว) × 100
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown(f"<div class='big-number'>{rh:.1f} %</div>", unsafe_allow_html=True)
 
 m_vapor = st.number_input("มวลไอน้ำ (g)", value=15.5)
 volume = st.number_input("ปริมาตรอากาศ (m³)", value=1.0)
 
 ah = m_vapor / volume if volume != 0 else 0
+
+st.markdown("""
+<div class="formula">
+<b>ความชื้นสมบูรณ์:</b> AH = m / V
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown(f"<div class='big-number'>{ah:.2f} g/m³</div>", unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
@@ -130,6 +155,13 @@ st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("🌧️ ปริมาณน้ำฝน")
 
 rain = st.slider("เลือกปริมาณฝน (mm)", 0, 50, 5)
+
+st.markdown("""
+<div class="formula">
+<b>สูตร:</b> ปริมาณน้ำฝนวัดเป็นมิลลิเมตร (mm)
+</div>
+""", unsafe_allow_html=True)
+
 st.markdown(f"<div class='big-number'>{rain} mm</div>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -143,6 +175,12 @@ cloud = st.selectbox(
      "60% - เมฆมาก", "80% - เมฆหนา", "100% - ปกคลุมทั้งหมด"]
 )
 
+st.markdown("""
+<div class="formula">
+<b>คำอธิบาย:</b> เปอร์เซ็นต์พื้นที่ท้องฟ้าที่ถูกเมฆปกคลุม
+</div>
+""", unsafe_allow_html=True)
+
 st.success(f"☁️ สภาพท้องฟ้า: {cloud}")
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -150,8 +188,13 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<div class="card">', unsafe_allow_html=True)
 st.subheader("📅 พยากรณ์อากาศ 7 วัน")
 
-days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+st.markdown("""
+<div class="formula">
+<b>แนวคิด:</b> คำนวณโดยสุ่มจากอุณหภูมิปัจจุบัน ± 4 °C
+</div>
+""", unsafe_allow_html=True)
 
+days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
 temps = [temp + random.randint(-4,4) for _ in range(7)]
 
 st.line_chart(temps)
