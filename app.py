@@ -292,3 +292,39 @@ for i in range(7):
         📉 {pres} Pa
         </div>
         """, unsafe_allow_html=True)
+        # =====================================================
+# 📊 GRAPH SECTION (NO EXTRA LIBRARIES)
+# =====================================================
+
+st.markdown("## 📊 กราฟพยากรณ์ 7 วัน")
+
+days = []
+tmins = []
+tmaxs = []
+hums = []
+pressures = []
+rains = []
+
+for d in week_data:
+    days.append(d[0].strftime("%d/%m"))
+    tmins.append(d[1])
+    tmaxs.append(d[2])
+    hums.append(d[3])
+    pressures.append(d[4])
+    rains.append(d[6])
+
+st.subheader("🌡️ อุณหภูมิ")
+
+st.line_chart({
+    "ต่ำสุด": tmins,
+    "สูงสุด": tmaxs
+})
+
+st.subheader("💧 ความชื้น")
+st.line_chart(hums)
+
+st.subheader("📉 ความดันอากาศ")
+st.line_chart(pressures)
+
+st.subheader("🌧️ โอกาสฝน")
+st.line_chart(rains)
