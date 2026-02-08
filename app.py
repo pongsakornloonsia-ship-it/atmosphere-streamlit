@@ -293,6 +293,28 @@ for i in range(7):
         </div>
         """, unsafe_allow_html=True)
         # =====================================================
+# 📦 เตรียมข้อมูล 7 วัน สำหรับกราฟ
+# =====================================================
+
+week_data = []
+
+today = datetime.date.today()
+
+for i in range(7):
+    date = today + datetime.timedelta(days=i)
+
+    tmin = round(random.uniform(22, 27), 1)
+    tmax = round(tmin + random.uniform(4, 9), 1)
+
+    hum = random.randint(55, 95)
+    pres = random.randint(100500, 101800)
+    cloud = random.randint(0, 100)
+    rainp = min(100, int(cloud * 0.8))
+
+    week_data.append(
+        (date, tmin, tmax, hum, pres, cloud, rainp)
+    )
+        # =====================================================
 # 📊 GRAPH SECTION (NO EXTRA LIBRARIES)
 # =====================================================
 
