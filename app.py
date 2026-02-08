@@ -260,6 +260,43 @@ AH = m / V
 Rain ≈ Cloud × 0.8
 </div>
 """, unsafe_allow_html=True)
+st.title("โปรแกรมพยากรณ์อากาศ 7 วัน")
+
+# 👉 ใส่ตรงนี้
+# =====================================
+# 🌧️ RAINFALL VISUAL (CUSTOM STYLE)
+# =====================================
+
+st.markdown("## 🌧️ ปริมาณฝนคาดการณ์")
+
+rain = st.slider(
+    "เลือกปริมาณฝน (mm)",
+    min_value=0,
+    max_value=100,
+    value=40
+)
+
+if rain == 0:
+    level = "☀️ ไม่มีฝน"
+elif rain <= 10:
+    level = "🌦️ ฝนเบา"
+elif rain <= 30:
+    level = "🌧️ ฝนปานกลาง"
+elif rain <= 60:
+    level = "🌧️🌧️ ฝนหนัก"
+else:
+    level = "⛈️ ฝนตกหนักมาก"
+
+st.subheader(level)
+st.progress(rain / 100)
+
+st.metric("Rainfall", f"{rain} mm")
+
+st.markdown("""
+<div style="font-size:40px; text-align:center;">
+☁️ 🌧️ ☁️
+</div>
+""", unsafe_allow_html=True)
 
 # =====================================================
 # 📅 7 DAY FORECAST
