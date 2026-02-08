@@ -356,4 +356,4 @@ fig4, ax4 = plt.subplots()
 ax4.plot(days, rains, marker="o")
 ax4.set_title("🌧️ โอกาสฝน 7 วัน")
 ax4.set_ylabel("%")
-st.pyplot(fig4)
+st.pyplot(fig4
