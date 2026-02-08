@@ -167,7 +167,6 @@ st.success(f"จังหวัด: {province} | พิกัด: {lat}, {lon}")
 # =====================================================
 
 st.markdown("## 🗺️ แผนที่")
-
 st.map([{"lat": lat, "lon": lon}])
 
 # =====================================================
@@ -180,6 +179,87 @@ st.subheader("🌡️ อุณหภูมิ")
 temp = st.number_input("อุณหภูมิ (°C)", value=28.0)
 st.markdown(f"<div class='big-number'>{temp:.1f} °C</div>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
+
+# =====================================================
+# 📉 PRESSURE
+# =====================================================
+
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("📉 ความดันอากาศ")
+
+F = st.number_input("แรง (N)", value=101300.0)
+A = st.number_input("พื้นที่ (m²)", value=1.0)
+
+P = F / A if A != 0 else 0
+st.markdown(f"<div class='big-number'>{P:,.0f} N/m²</div>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# =====================================================
+# 💧 HUMIDITY
+# =====================================================
+
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("💧 ความชื้น")
+
+m_real = st.number_input("มวลไอน้ำจริง (g)", value=12.5)
+m_sat = st.number_input("มวลไอน้ำอิ่มตัว (g)", value=17.3)
+
+rh = (m_real / m_sat) * 100 if m_sat != 0 else 0
+st.markdown(f"<div class='big-number'>{rh:.1f} %</div>", unsafe_allow_html=True)
+
+m_vapor = st.number_input("มวลไอน้ำ (g)", value=15.5)
+volume = st.number_input("ปริมาตรอากาศ (m³)", value=1.0)
+
+ah = m_vapor / volume if volume != 0 else 0
+st.markdown(f"<div class='big-number'>{ah:.2f} g/m³</div>", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# =====================================================
+# 🌧️ RAIN
+# =====================================================
+
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("🌧️ ปริมาณน้ำฝน")
+
+rain = st.slider("เลือกปริมาณฝน (mm)", 0, 50, 5)
+st.markdown(f"<div class='big-number'>{rain} mm</div>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# =====================================================
+# ☁️ CLOUD
+# =====================================================
+
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.subheader("☁️ ปริมาณเมฆบนท้องฟ้า")
+
+cloud_percent = st.slider("ปริมาณเมฆ (%)", 0, 100, 40)
+rain_prob = int(cloud_percent * 0.8)
+
+st.markdown(f"""
+<b>☁️ เมฆ:</b> {cloud_percent} %  
+<b>🌧️ โอกาสฝน:</b> {rain_prob} %
+""", unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# =====================================================
+# 📐 FORMULAS
+# =====================================================
+
+st.markdown("""
+<div class="card">
+<h3>📐 สูตรที่ใช้</h3>
+
+P = F / A  
+
+RH = (mจริง / mอิ่มตัว) × 100  
+
+AH = m / V  
+
+Rain ≈ Cloud × 0.8
+</div>
+""", unsafe_allow_html=True)
 
 # =====================================================
 # 📅 7 DAY FORECAST
