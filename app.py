@@ -314,6 +314,107 @@ for i in range(7):
     week_data.append(
         (date, tmin, tmax, hum, pres, cloud, rainp)
     )
+    # =====================================================
+# ☁️ CLOUD TYPE VISUAL CARDS
+# =====================================================
+
+st.markdown("## ☁️ ประเภทเมฆบนท้องฟ้า")
+
+st.markdown("""
+<style>
+
+.cloud-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+}
+
+.cloud-card {
+    border-radius:20px;
+    padding:18px;
+    background:white;
+    box-shadow:0 10px 20px rgba(0,0,0,0.08);
+}
+
+.cloud-box {
+    height:110px;
+    border-radius:14px;
+    margin-top:10px;
+    position:relative;
+}
+
+/* ---- Individual types ---- */
+
+.cumulus {
+    background:linear-gradient(#e0f2fe,#f8fafc);
+}
+.stratus {
+    background:linear-gradient(#d1d5db,#f3f4f6);
+}
+.cirrus {
+    background:linear-gradient(#dbeafe,#eff6ff);
+}
+.cumulonimbus {
+    background:linear-gradient(#6b7280,#111827);
+}
+.nimbostratus {
+    background:linear-gradient(#9ca3af,#374151);
+}
+
+/* cloud shapes */
+.cloud-shape {
+    position:absolute;
+    background:white;
+    border-radius:50%;
+    opacity:0.9;
+}
+
+</style>
+
+<div class="cloud-grid">
+
+<div class="cloud-card">
+<h4>☁️ เมฆคิวมูลัส</h4>
+Cumulus
+<div class="cloud-box cumulus">
+<div class="cloud-shape" style="width:60px;height:40px;top:40px;left:30px;"></div>
+<div class="cloud-shape" style="width:80px;height:55px;top:30px;left:70px;"></div>
+</div>
+เมฆขาวปุย ลอยเดี่ยว อากาศดี
+</div>
+
+<div class="cloud-card">
+<h4>🌫️ เมฆสเตรตัส</h4>
+Stratus
+<div class="cloud-box stratus"></div>
+เมฆชั้นต่ำ ปกคลุมท้องฟ้า
+</div>
+
+<div class="cloud-card">
+<h4>🌤️ เมฆซีร์รัส</h4>
+Cirrus
+<div class="cloud-box cirrus">
+<div class="cloud-shape" style="width:100px;height:10px;top:40px;left:40px;border-radius:20px;"></div>
+</div>
+เมฆเส้นบาง ระดับสูง
+</div>
+
+<div class="cloud-card">
+<h4>⛈️ เมฆคิวมูโลนิมบัส</h4>
+Cumulonimbus
+<div class="cloud-box cumulonimbus"></div>
+เมฆฝนฟ้าคะนอง อันตราย
+</div>
+
+<div class="cloud-card">
+<h4>🌧️ เมฆนิมโบสเตรตัส</h4>
+Nimbostratus
+<div class="cloud-box nimbostratus"></div>
+เมฆฝนต่อเนื่อง ฟ้าครึ้ม
+</div>
+
+</div>
+""", unsafe_allow_html=True)
         # =====================================================
 # 📊 GRAPH SECTION (NO EXTRA LIBRARIES)
 # =====================================================
